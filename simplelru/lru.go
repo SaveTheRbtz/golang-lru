@@ -32,12 +32,13 @@ func NewLRU[K comparable, V any](size int, onEvict EvictCallback[K, V]) (*LRU[K,
 
 // Purge is used to completely clear the cache.
 func (c *LRU[K, V]) Purge() {
-	for k, v := range c.items {
-		if c.onEvict != nil {
+	if c.onEvict != nil {
+		for k, v := range c.items {
 			c.onEvict(k, v.value)
 		}
-		delete(c.items, k)
 	}
+
+	c.items = make(map[K]*entry[K, V])
 	c.evictList.init()
 }
 
