@@ -4,6 +4,8 @@
 
 package simplelru
 
+import "arena"
+
 // entry is an LRU entry
 type entry[K comparable, V any] struct {
 	// Next and previous pointers in the doubly-linked list of elements.
@@ -34,6 +36,8 @@ func (e *entry[K, V]) prevEntry() *entry[K, V] {
 // lruList represents a doubly linked list.
 // The zero value for lruList is an empty list ready to use.
 type lruList[K comparable, V any] struct {
+	arena *arena.Arena
+
 	root entry[K, V] // sentinel list element, only &root, root.prev, and root.next are used
 	len  int         // current list length excluding (this) sentinel element
 }
@@ -43,6 +47,12 @@ func (l *lruList[K, V]) init() *lruList[K, V] {
 	l.root.next = &l.root
 	l.root.prev = &l.root
 	l.len = 0
+
+	if l.arena != nil {
+		l.arena.Free()
+	}
+	l.arena = arena.NewArena()
+
 	return l
 }
 
@@ -81,7 +91,11 @@ func (l *lruList[K, V]) insert(e, at *entry[K, V]) *entry[K, V] {
 
 // insertValue is a convenience wrapper for insert(&Element{Value: v}, at).
 func (l *lruList[K, V]) insertValue(k K, v V, at *entry[K, V]) *entry[K, V] {
-	return l.insert(&entry[K, V]{value: v, key: k}, at)
+	kv := arena.New[entry[K, V]](l.arena)
+	kv.value = v
+	kv.key = k
+
+	return l.insert(kv, at)
 }
 
 // remove removes e from its list, decrements l.len

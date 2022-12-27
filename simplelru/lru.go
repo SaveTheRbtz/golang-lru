@@ -24,8 +24,7 @@ func NewLRU[K comparable, V any](size int, options ...option[K, V]) (*LRU[K, V],
 	}
 
 	c := &LRU[K, V]{
-		size:      size,
-		evictList: newList[K, V](),
+		size: size,
 	}
 
 	for _, o := range options {
@@ -34,6 +33,7 @@ func NewLRU[K comparable, V any](size int, options ...option[K, V]) (*LRU[K, V],
 		}
 	}
 
+	c.evictList = newList[K, V]()
 	c.items = make(map[K]*entry[K, V], c.preallocate)
 
 	return c, nil
