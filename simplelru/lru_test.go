@@ -10,7 +10,7 @@ func TestLRU(t *testing.T) {
 		}
 		evictCounter++
 	}
-	l, err := NewLRU(128, onEvicted)
+	l, err := NewLRU(128, WithOnEvictCallback(onEvicted))
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -71,7 +71,7 @@ func TestLRU(t *testing.T) {
 }
 
 func TestLRU_GetOldest_RemoveOldest(t *testing.T) {
-	l, err := NewLRU[int, int](128, nil)
+	l, err := NewLRU[int, int](128)
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -110,7 +110,7 @@ func TestLRU_Add(t *testing.T) {
 		evictCounter++
 	}
 
-	l, err := NewLRU(1, onEvicted)
+	l, err := NewLRU(1, WithOnEvictCallback(onEvicted))
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -125,7 +125,7 @@ func TestLRU_Add(t *testing.T) {
 
 // Test that Contains doesn't update recent-ness
 func TestLRU_Contains(t *testing.T) {
-	l, err := NewLRU[int, int](2, nil)
+	l, err := NewLRU[int, int](2)
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -167,7 +167,7 @@ func TestLRU_Resize(t *testing.T) {
 	onEvicted := func(k int, v int) {
 		onEvictCounter++
 	}
-	l, err := NewLRU(2, onEvicted)
+	l, err := NewLRU(2, WithOnEvictCallback(onEvicted))
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}

@@ -36,7 +36,7 @@ func NewWithEvict[K comparable, V any](size int, onEvicted func(key K, value V))
 		c.initEvictBuffers()
 		onEvicted = c.onEvicted
 	}
-	c.lru, err = simplelru.NewLRU(size, onEvicted)
+	c.lru, err = simplelru.NewLRU(size, simplelru.WithOnEvictCallback(onEvicted))
 	return
 }
 

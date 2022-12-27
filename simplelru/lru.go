@@ -9,14 +9,16 @@ type EvictCallback[K comparable, V any] func(key K, value V)
 
 // LRU implements a non-thread safe fixed size LRU cache
 type LRU[K comparable, V any] struct {
-	size      int
+	size        int
+	preallocate int
+
 	evictList *lruList[K, V]
 	items     map[K]*entry[K, V]
 	onEvict   EvictCallback[K, V]
 }
 
 // NewLRU constructs an LRU of the given size
-func NewLRU[K comparable, V any](size int, onEvict EvictCallback[K, V]) (*LRU[K, V], error) {
+func NewLRU[K comparable, V any](size int, options ...option[K, V]) (*LRU[K, V], error) {
 	if size <= 0 {
 		return nil, errors.New("must provide a positive size")
 	}
@@ -24,9 +26,16 @@ func NewLRU[K comparable, V any](size int, onEvict EvictCallback[K, V]) (*LRU[K,
 	c := &LRU[K, V]{
 		size:      size,
 		evictList: newList[K, V](),
-		items:     make(map[K]*entry[K, V]),
-		onEvict:   onEvict,
 	}
+
+	for _, o := range options {
+		if o != nil {
+			o(c)
+		}
+	}
+
+	c.items = make(map[K]*entry[K, V], c.preallocate)
+
 	return c, nil
 }
 
